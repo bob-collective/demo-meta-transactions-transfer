@@ -57,4 +57,4 @@ const config = createConfig({
   publicClient
 });
 
-export { L2_CHAIN_CONFIG, L2_METADATA, L2_PROJECT_ID, config, publicClient };
+export { L2_CHAIN_CONFIG, L2_METADATA, L2_PROJECT_ID, config, publicClient, chains };

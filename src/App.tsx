@@ -1,4 +1,4 @@
-import { Card, Flex, Input, TokenInput } from '@interlay/ui';
+import { Card, Flex, H1, Input, TokenInput } from '@interlay/ui';
 import { createWeb3Modal } from '@web3modal/wagmi/react';
 import { Layout } from './components';
 import { L2_CHAIN_CONFIG, L2_PROJECT_ID, config } from './connectors/wagmi-connectors';
@@ -50,6 +50,9 @@ function App() {
     <Layout>
       <StyledWrapper direction='column' gap='spacing4'>
         <Card>
+          <H1 align='center' size='xl'>
+            Transfer
+          </H1>
           <form onSubmit={form.handleSubmit}>
             <Flex marginTop='spacing4' direction='column' gap='spacing8'>
               <Flex direction='column' gap='spacing4'>
@@ -60,11 +63,7 @@ function App() {
                   valueUSD={0}
                   {...form.getTokenFieldProps('amount')}
                 />
-                <Input
-                  label='Bitcoin Address'
-                  placeholder='Enter your bitcoin address'
-                  {...form.getFieldProps('address')}
-                />
+                <Input label='Address' placeholder='Enter your bitcoin address' {...form.getFieldProps('address')} />
               </Flex>
               <AuthCTA loading={mutation.isLoading} disabled={isSubmitDisabled} size='large' type='submit' fullWidth>
                 Transfer

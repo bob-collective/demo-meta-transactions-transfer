@@ -9,6 +9,7 @@ import { StyledWrapper } from './App.style';
 import { AuthCTA } from './components/AuthCTA';
 import { isFormDisabled } from './utils/validation';
 import './utils/yup.custom';
+import { useAccountAbstraction } from './aa/context';
 
 type TransferForm = {
   amount: string;
@@ -23,6 +24,9 @@ createWeb3Modal({
 });
 
 function App() {
+  const {client} = useAccountAbstraction();
+
+  console.log(client)
   const mutation = useMutation({
     mutationFn: async (form: TransferForm) => {
       console.log(form);

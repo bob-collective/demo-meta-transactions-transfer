@@ -1,6 +1,5 @@
 import { BaseAccountAPI, HttpRpcClient } from '@account-abstraction/sdk';
-import { createContext, useContext, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { providers } from 'ethers';
 import { wrapProvider } from './utils';
 import { HexString } from '../types';
@@ -9,14 +8,11 @@ import { Web3Provider } from '@ethersproject/providers';
 const ENTRY_POINT_ADDRESS = '0x8B2e6AA2451a49d2cb124f69896Bc927333c7f33';
 
 type accountAbstractionContextValue = {
-  accountAPI?: BaseAccountAPI;
-  bundlerClient?: HttpRpcClient;
-  address?: `0x${string}`;
-  ownerAddress?: `0x${string}`;
+  client?: AaClient;
 };
 
 const initialState = {
-  accountAPI: undefined
+  client: undefined
 };
 
 const accountAbstractionContext = createContext<accountAbstractionContextValue>(initialState);
@@ -33,7 +29,7 @@ const useAccountAbstraction = () => {
 
 interface AaClientConstructorOpts {
   bundlerUrl?: string;
-} 
+}
 
 class AaClient {
   public isInitialized = false;
@@ -44,13 +40,13 @@ class AaClient {
   private _signer: providers.JsonRpcSigner | null = null;
   private _injectedProvider: Web3Provider;
 
-  constructor(opts: AaClientConstructorOpts) {
+  constructor(opts: AaClientConstructorOpts = {}) {
     if (!window.ethereum) {
-      throw new Error("Injected wallet not found.")
+      throw new Error('Injected wallet not found.');
     }
     this._injectedProvider = new providers.Web3Provider(window.ethereum);
 
-    this._initialize(opts)
+    this._initialize(opts);
   }
 
   /**
@@ -65,7 +61,6 @@ class AaClient {
     };
 
     this._signer = this._injectedProvider.getSigner();
-    
 
     const wrappedProvider = await wrapProvider(this._injectedProvider, config, this._signer);
 
@@ -77,9 +72,8 @@ class AaClient {
   }
 
   private _checkInitialized() {
-    if (!this.isInitialized)
-    {
-      throw new Error("AA client is not initialized yet.")
+    if (!this.isInitialized) {
+      throw new Error('AA client is not initialized yet.');
     }
   }
 
@@ -88,15 +82,13 @@ class AaClient {
     // TODO: check if the account has funded entrypoint yet.
     // If not, then:
     // Fund the account.
-    const hexStrippedSmartAccount = this.smartAccountAddress!.slice(2)
-    await this._signer!
-      .sendTransaction({
-        to: ENTRY_POINT_ADDRESS,
-        value: 1000000000000000,
-        data: `0xb760faf9000000000000000000000000${hexStrippedSmartAccount}`,
-        gasLimit: 100000
-      })
-      .then(async (tx) => await tx.wait());
+    const hexStrippedSmartAccount = this.smartAccountAddress!.slice(2);
+    await this._signer!.sendTransaction({
+      to: ENTRY_POINT_ADDRESS,
+      value: 1000000000000000,
+      data: `0xb760faf9000000000000000000000000${hexStrippedSmartAccount}`,
+      gasLimit: 100000
+    }).then(async (tx) => await tx.wait());
   }
 
   public async sendUserOp() {
@@ -106,52 +98,56 @@ class AaClient {
 }
 
 const AccountAbstractionProvider = ({ children }: { children: JSX.Element }) => {
-  const [accountAPI, setAccountAPI] = useState<BaseAccountAPI>();
-  const [bundlerClient, setBundlerClient] = useState<HttpRpcClient>();
-  const [address, setAddress] = useState<`0x${string}`>();
+  // const [accountAPI, setAccountAPI] = useState<BaseAccountAPI>();
+  // const [bundlerClient, setBundlerClient] = useState<HttpRpcClient>();
+  // const [address, setAddress] = useState<`0x${string}`>();
+  const [client, setClient] = useState<AaClient>();
 
-  const { address: ownerAddress } = useAccount({
-    onConnect: async ({ address, connector }) => {
-      if (!address || !connector || !window.ethereum) return;
+  useEffect(() => {
+    const aaClient = new AaClient();
+    setClient(aaClient);
+  }, []);
 
-      const signerProvider = new providers.Web3Provider(window.ethereum);
+  // const { address: ownerAddress } = useAccount({
+  //   onConnect: async ({ address, connector }) => {
+  //     // if (!address || !connector || !window.ethereum) return;
+  //     const aaClient = new AaClient();
+  //     setClient(aaClient);
+  //     // const signerProvider = new providers.Web3Provider(window.ethereum);
 
-      const config = {
-        chainId: await signerProvider.getNetwork().then((net) => net.chainId),
-        entryPointAddress: ENTRY_POINT_ADDRESS,
-        bundlerUrl: 'http://localhost:3000/rpc'
-      };
+  //     // const config = {
+  //     //   chainId: await signerProvider.getNetwork().then((net) => net.chainId),
+  //     //   entryPointAddress: ENTRY_POINT_ADDRESS,
+  //     //   bundlerUrl: 'http://localhost:3000/rpc'
+  //     // };
 
-      const owner = signerProvider.getSigner();
+  //     // const owner = signerProvider.getSigner();
 
-      const wrappedProvider = await wrapProvider(signerProvider, config, owner);
+  //     // const wrappedProvider = await wrapProvider(signerProvider, config, owner);
 
-      const smartAccountAddress = await wrappedProvider.smartAccountAPI.getAccountAddress();
+  //     // const smartAccountAddress = await wrappedProvider.smartAccountAPI.getAccountAddress();
 
-      // TODO: check if the account has funded entrypoint yet.
-      // If not, then:
-      // Fund the account.
-      await signerProvider
-        .getSigner()
-        .sendTransaction({
-          to: ENTRY_POINT_ADDRESS,
-          value: 1000000000000000,
-          data: `0xb760faf9000000000000000000000000${smartAccountAddress.slice(2)}`,
-          gasLimit: 100000
-        })
-        .then(async (tx) => await tx.wait());
+  //     // // TODO: check if the account has funded entrypoint yet.
+  //     // // If not, then:
+  //     // // Fund the account.
+  //     // await signerProvider
+  //     //   .getSigner()
+  //     //   .sendTransaction({
+  //     //     to: ENTRY_POINT_ADDRESS,
+  //     //     value: 1000000000000000,
+  //     //     data: `0xb760faf9000000000000000000000000${smartAccountAddress.slice(2)}`,
+  //     //     gasLimit: 100000
+  //     //   })
+  //     //   .then(async (tx) => await tx.wait());
 
-      setAddress(smartAccountAddress as `0x${string}`);
-      setAccountAPI(wrappedProvider.smartAccountAPI);
-      setBundlerClient(wrappedProvider.httpRpcClient);
-    }
-  });
+  //     // setAddress(smartAccountAddress as `0x${string}`);
+  //     // setAccountAPI(wrappedProvider.smartAccountAPI);
+  //     // setBundlerClient(wrappedProvider.httpRpcClient);
+  //   }
+  // });
 
   const state = {
-    accountAPI,
-    ownerAddress,
-    address,
-    bundlerClient
+    client
   };
 
   return <accountAbstractionContext.Provider value={state}>{children}</accountAbstractionContext.Provider>;

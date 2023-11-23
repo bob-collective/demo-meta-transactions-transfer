@@ -5,11 +5,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { WagmiConfig } from 'wagmi';
 import App from './App';
-import { config } from './connectors/wagmi-connectors';
+import { chains, config } from './connectors/wagmi-connectors';
 import './index.css';
+import '@rainbow-me/rainbowkit/styles.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AccountAbstractionProvider } from './aa/context';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 
 const queryClient = new QueryClient();
 
@@ -18,10 +20,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <WagmiConfig config={config}>
         <AccountAbstractionProvider>
-          <InterlayUIProvider>
-            <CSSReset />
-            <App />
-          </InterlayUIProvider>
+          <RainbowKitProvider chains={chains}>
+            <InterlayUIProvider>
+              <CSSReset />
+              <App />
+            </InterlayUIProvider>
+          </RainbowKitProvider>
         </AccountAbstractionProvider>
       </WagmiConfig>
     </QueryClientProvider>

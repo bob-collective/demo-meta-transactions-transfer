@@ -1,32 +1,30 @@
 import { Card, Flex, H1, Input, TokenInput } from '@interlay/ui';
-import { createWeb3Modal } from '@web3modal/wagmi/react';
 import { Layout } from './components';
-import { L2_CHAIN_CONFIG, L2_PROJECT_ID, config } from './connectors/wagmi-connectors';
 
 import { useForm } from '@interlay/hooks';
+import { mergeProps } from '@react-aria/utils';
 import { useMutation } from '@tanstack/react-query';
+import { Key, useEffect, useState } from 'react';
 import { StyledWrapper } from './App.style';
 import { AuthCTA } from './components/AuthCTA';
+import { CurrencyTicker, Erc20CurrencyTicker } from './constants';
+import { useBalances } from './hooks/useBalances';
 import { isFormDisabled } from './utils/validation';
 import './utils/yup.custom';
 import { useAccountAbstraction } from './aa/context';
 
 type TransferForm = {
   amount: string;
+  ticker: string;
   address: string;
 };
-
-createWeb3Modal({
-  defaultChain: L2_CHAIN_CONFIG,
-  wagmiConfig: config,
-  projectId: L2_PROJECT_ID,
-  chains: config.chains
-});
 
 function App() {
   const {client} = useAccountAbstraction();
 
   console.log(client)
+  const [ticker, setTicker] = useState<CurrencyTicker>(Erc20CurrencyTicker.WBTC);
+  const { balances, getBalance } = useBalances();
   const mutation = useMutation({
     mutationFn: async (form: TransferForm) => {
       console.log(form);
@@ -39,14 +37,24 @@ function App() {
     mutation.mutate(values);
   };
 
+  const balance = getBalance(ticker);
+
   const form = useForm<TransferForm>({
     initialValues: {
       amount: '',
+      ticker: 'WBTC',
       address: ''
     },
     onSubmit: handleSubmit,
     hideErrors: 'untouched'
   });
+
+  useEffect(() => {
+    if (!balances) return;
+
+    form.validateForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balances]);
 
   const isSubmitDisabled = isFormDisabled(form);
 
@@ -61,13 +69,36 @@ function App() {
             <Flex marginTop='spacing4' direction='column' gap='spacing8'>
               <Flex direction='column' gap='spacing4'>
                 <TokenInput
-                  type='fixed'
-                  label='Amount'
-                  ticker='BTC'
+                  type='selectable'
+                  label='Offer'
+                  balance={balance?.toBig().toString()}
                   valueUSD={0}
+                  selectProps={mergeProps(
+                    {
+                      items: [
+                        {
+                          value: 'WBTC',
+                          balance: getBalance(Erc20CurrencyTicker.WBTC).toBig().toNumber(),
+                          balanceUSD: 0
+                        },
+                        {
+                          value: 'ETH',
+                          balance: getBalance(Erc20CurrencyTicker.WBTC).toBig().toNumber(),
+                          balanceUSD: 0
+                        },
+                        {
+                          value: 'USDT',
+                          balance: getBalance(Erc20CurrencyTicker.USDT).toBig().toNumber(),
+                          balanceUSD: 0
+                        }
+                      ],
+                      onSelectionChange: (key: Key) => setTicker(key as Erc20CurrencyTicker)
+                    },
+                    form.getSelectFieldProps('ticker')
+                  )}
                   {...form.getTokenFieldProps('amount')}
                 />
-                <Input label='Address' placeholder='Enter your bitcoin address' {...form.getFieldProps('address')} />
+                <Input label='Address' placeholder='Enter address' {...form.getFieldProps('address')} />
               </Flex>
               <AuthCTA loading={mutation.isLoading} disabled={isSubmitDisabled} size='large' type='submit' fullWidth>
                 Transfer

@@ -1,11 +1,12 @@
 import { Chain, configureChains, createConfig } from 'wagmi';
 
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { publicProvider } from 'wagmi/providers/public';
 import { L2_BLOCK_EXPLORER, L2_CHAIN_ID, L2_MULTICALL3_ADDRESS, L2_RPC_URL, L2_WSS_URL } from '../config';
 
-import { InjectedConnector } from 'wagmi/connectors/injected';
-import Web3AuthConnectorInstance from './Web3AuthConnectorInstance';
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { metaMaskWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { rainbowWeb3AuthConnector } from './RainbowAuthConnectorInstance';
+
 const L2_PROJECT_ID = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID as string;
 
 const L2_METADATA = {
@@ -21,8 +22,8 @@ const L2_CHAIN_CONFIG = {
   network: 'BOB-L2-Demo',
   nativeCurrency: {
     decimals: 18,
-    name: 'Bob',
-    symbol: 'BOB'
+    name: 'Ethereum',
+    symbol: 'ETH'
   },
   rpcUrls: {
     public: { http: [L2_RPC_URL], webSocket: [L2_WSS_URL] },
@@ -43,18 +44,29 @@ const chains = [L2_CHAIN_CONFIG];
 
 const { publicClient, webSocketPublicClient } = configureChains(chains, [publicProvider()]);
 
+// const { connectors } = getDefaultWallets({
+//   appName: 'My RainbowKit App',
+//   projectId: L2_PROJECT_ID,
+//   chains
+// });
+
+const connectors = connectorsForWallets([
+  {
+    groupName: 'Recommended',
+    wallets: [
+      rainbowWallet({ projectId: L2_PROJECT_ID, chains }),
+      walletConnectWallet({ projectId: L2_PROJECT_ID, chains }),
+      metaMaskWallet({ projectId: L2_PROJECT_ID, chains }),
+      rainbowWeb3AuthConnector({ chains })
+    ]
+  }
+]);
+
 const config = createConfig({
   autoConnect: true,
-  connectors: [
-    new WalletConnectConnector({
-      chains,
-      options: { projectId: L2_PROJECT_ID, showQrModal: false, metadata: L2_METADATA }
-    }),
-    new InjectedConnector({ chains, options: { shimDisconnect: true } }), // new InjectedConnector({ chains, options: { shimDisconnect: true } })
-    Web3AuthConnectorInstance(chains)
-  ],
+  connectors,
   webSocketPublicClient,
   publicClient
 });
 
-export { L2_CHAIN_CONFIG, L2_METADATA, L2_PROJECT_ID, config, publicClient, chains };
+export { L2_CHAIN_CONFIG, L2_METADATA, L2_PROJECT_ID, chains, config, publicClient };

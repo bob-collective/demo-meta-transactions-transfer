@@ -1,16 +1,13 @@
-import { CTA, Flex, Span } from '@interlay/ui';
-import { useWeb3Modal } from '@web3modal/wagmi/react';
-import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
-import truncateEthAddress from 'truncate-eth-address';
+import { Flex } from '@interlay/ui';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
-import { CTAWrapper, StyledHeader } from './Layout.styles';
+import { Badge } from '../Badge';
 import { Faucet } from '../Faucet';
 import { GasFaucet } from '../GasFaucet';
-import { Badge } from '../Badge';
+import { CTAWrapper, StyledHeader } from './Layout.styles';
 
 const Header = () => {
-  const { open } = useWeb3Modal();
-  const { address, isConnecting } = useAccount();
+  const { address } = useAccount();
 
   return (
     <StyledHeader elementType='header' alignItems='center' justifyContent='space-between'>
@@ -31,7 +28,7 @@ const Header = () => {
             <GasFaucet />
           </>
         )}
-        <CTA disabled={isConnecting} size='small' onClick={() => open()}>
+        {/* <CTA disabled={isConnecting} size='small' onClick={() => open()}>
           {address ? (
             <Flex elementType='span' gap='spacing2'>
               <Jazzicon diameter={20} seed={jsNumberForAddress(address)} />
@@ -42,7 +39,8 @@ const Header = () => {
           ) : (
             'Connect Wallet'
           )}
-        </CTA>
+        </CTA> */}
+        <ConnectButton />
       </CTAWrapper>
     </StyledHeader>
   );

@@ -1,13 +1,15 @@
-import { Web3AuthConnector } from '@web3auth/web3auth-wagmi-connector';
+import { Wallet } from '@rainbow-me/rainbowkit';
+import { CHAIN_NAMESPACES, WALLET_ADAPTERS } from '@web3auth/base';
+import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
 import { Web3Auth } from '@web3auth/modal';
 import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
-import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
-import { CHAIN_NAMESPACES, WALLET_ADAPTERS } from '@web3auth/base';
+import { Web3AuthConnector } from '@web3auth/web3auth-wagmi-connector';
+import { Chain } from 'viem';
 
 const name = 'My App Name';
 const iconUrl = 'https://web3auth.io/docs/contents/logo-ethereum.png';
 
-export const rainbowWeb3AuthConnector = ({ chains }) => {
+export const rainbowWeb3AuthConnector = ({ chains }: { chains: Chain[] }): Wallet => {
   // Create Web3Auth Instance
   const chainConfig = {
     chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -16,19 +18,20 @@ export const rainbowWeb3AuthConnector = ({ chains }) => {
     displayName: chains[0].name,
     tickerName: chains[0].nativeCurrency?.name,
     ticker: chains[0].nativeCurrency?.symbol,
-    blockExplorer: chains[0].blockExplorers?.default.url[0]
+    blockExplorer: chains[0].blockExplorers?.default.url[0] as string
   };
 
   const web3AuthInstance = new Web3Auth({
-    clientId: 'YOUR_CLIENT_ID',
-    chainConfig,
+    clientId: 'BNb7d5td0513e3XyZ3PLzk-jE6YtISkFLLXRKLqMrPzPZXiV9SxqWvn7w0MCDBFsth6w9Fgx9JWW2jcfKR56mUc', // Get your Client ID from the Web3Auth Dashboard
+    web3AuthNetwork: 'sapphire_devnet',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    chainConfig: chainConfig as any,
     uiConfig: {
-      loginMethodsOrder: ['twitter', 'google'],
+      appName: name,
+      loginMethodsOrder: ['github', 'google'],
       defaultLanguage: 'en',
-      modalZIndex: '2147483647',
-      appName: name
+      modalZIndex: '2147483647'
     },
-    web3AuthNetwork: 'cyan',
     enableLogging: true
   });
 
@@ -47,6 +50,7 @@ export const rainbowWeb3AuthConnector = ({ chains }) => {
     }
   });
   web3AuthInstance.configureAdapter(openloginAdapterInstance);
+
   return {
     id: 'web3auth',
     name,

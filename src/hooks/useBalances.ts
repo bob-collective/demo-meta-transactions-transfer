@@ -34,7 +34,7 @@ const useBalances = () => {
         {} as Balances
       );
     },
-    refetchInterval: REFETCH_INTERVAL.MINUTE
+    refetchInterval: REFETCH_INTERVAL.BLOCK
   });
 
   const getBalance = useCallback(

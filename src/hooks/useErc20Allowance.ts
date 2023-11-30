@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ContractType, Erc20CurrencyTicker, UINT_256_MAX, contracts } from '../constants';
+import { ContractType, Erc20CurrencyTicker, contracts } from '../constants';
 import { useAccount, usePublicClient } from 'wagmi';
 import { useContract } from './useContract';
+
+const UINT_256_MAX = BigInt(2 ** 256) - BigInt(1);
 
 // Helper hook to check erc20 allowance and provide wrapper that handles allowance;
 const useErc20Allowance = (contract: ContractType, ticker: Erc20CurrencyTicker) => {
@@ -41,6 +43,7 @@ const useErc20Allowance = (contract: ContractType, ticker: Erc20CurrencyTicker) 
 
   const wrapInErc20ApprovalTx = useCallback(
     async (subroutine: () => void) => {
+      console.log(writeErc20Contract, isErc20TransferApproved);
       if (!writeErc20Contract || isErc20TransferApproved) {
         return subroutine();
       }

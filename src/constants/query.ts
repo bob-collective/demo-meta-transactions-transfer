@@ -1,5 +1,6 @@
 const REFETCH_INTERVAL = {
-  MINUTE: 60000
+  MINUTE: 60000,
+  BLOCK: 3000
 };
 
 export { REFETCH_INTERVAL };

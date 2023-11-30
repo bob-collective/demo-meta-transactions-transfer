@@ -7,11 +7,13 @@ import { useMutation } from '@tanstack/react-query';
 import { Key, useEffect, useState } from 'react';
 import { StyledWrapper } from './App.style';
 import { AuthCTA } from './components/AuthCTA';
-import { CurrencyTicker, Erc20CurrencyTicker } from './constants';
+import { ContractType, CurrencyTicker, Erc20CurrencyTicker } from './constants';
 import { useBalances } from './hooks/useBalances';
 import { isFormDisabled } from './utils/validation';
 import './utils/yup.custom';
-import { useAccountAbstraction } from './aa/context';
+import { useContract } from './hooks/useContract';
+import { toAtomicAmount } from './utils/currencies';
+import { useErc20Allowance } from './hooks/useErc20Allowance';
 
 type TransferForm = {
   amount: string;
@@ -20,15 +22,33 @@ type TransferForm = {
 };
 
 function App() {
-  const {client} = useAccountAbstraction();
-
-  console.log(client)
+  const { relayedContract } = useContract(ContractType.WBTC);
   const [ticker, setTicker] = useState<CurrencyTicker>(Erc20CurrencyTicker.WBTC);
+  const {
+    wrapInErc20ApprovalTx,
+    isAllowed,
+    isLoading: isLoadingApproval
+  } = useErc20Allowance(ContractType.ERC20_PAYMASTER, Erc20CurrencyTicker.WBTC);
   const { balances, getBalance } = useBalances();
+  const [waitingOnRelay, setWaitingOnRelay] = useState(false);
+
   const mutation = useMutation({
     mutationFn: async (form: TransferForm) => {
-      console.log(form);
+      if (!relayedContract) {
+        return;
+      }
 
+      const relayTx = async () => {
+        setWaitingOnRelay(true);
+        const atomicAmount = toAtomicAmount(form.amount, 'WBTC');
+        const transferTx = await relayedContract.transfer(form.address, atomicAmount.toString());
+
+        await transferTx.wait();
+        console.log(`Transaction succesfully relayed with id: ${transferTx.hash}`);
+        setWaitingOnRelay(false);
+      };
+
+      wrapInErc20ApprovalTx(relayTx);
       return;
     }
   });
@@ -56,7 +76,7 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [balances]);
 
-  const isSubmitDisabled = isFormDisabled(form);
+  const isSubmitDisabled = isFormDisabled(form) || waitingOnRelay || isLoadingApproval;
 
   return (
     <Layout>
@@ -80,16 +100,6 @@ function App() {
                           value: 'WBTC',
                           balance: getBalance(Erc20CurrencyTicker.WBTC).toBig().toNumber(),
                           balanceUSD: 0
-                        },
-                        {
-                          value: 'ETH',
-                          balance: getBalance(Erc20CurrencyTicker.WBTC).toBig().toNumber(),
-                          balanceUSD: 0
-                        },
-                        {
-                          value: 'USDT',
-                          balance: getBalance(Erc20CurrencyTicker.USDT).toBig().toNumber(),
-                          balanceUSD: 0
                         }
                       ],
                       onSelectionChange: (key: Key) => setTicker(key as Erc20CurrencyTicker)
@@ -101,7 +111,7 @@ function App() {
                 <Input label='Address' placeholder='Enter address' {...form.getFieldProps('address')} />
               </Flex>
               <AuthCTA loading={mutation.isLoading} disabled={isSubmitDisabled} size='large' type='submit' fullWidth>
-                Transfer
+                {isAllowed ? 'Transfer' : 'Approve & Transfer'}
               </AuthCTA>
             </Flex>
           </form>

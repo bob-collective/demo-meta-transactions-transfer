@@ -18,12 +18,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <WagmiConfig config={config}>
-          <RainbowKitProvider chains={chains}>
-            <InterlayUIProvider>
-              <CSSReset />
-              <App />
-            </InterlayUIProvider>
-          </RainbowKitProvider>
+        <RainbowKitProvider chains={chains}>
+          <InterlayUIProvider>
+            <CSSReset />
+            <App />
+          </InterlayUIProvider>
+        </RainbowKitProvider>
       </WagmiConfig>
     </QueryClientProvider>
   </React.StrictMode>

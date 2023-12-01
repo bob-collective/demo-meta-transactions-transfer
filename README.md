@@ -1,6 +1,6 @@
 # BOB Collective: Gas fee payment in WBTC (using ERC-2771)
 
-In this example, we will show how WBTC can be used for gas fee payment using ERC-2771 standard on BOB. This enables users to transact without the necessity to own ether.
+In this example, we will show how WBTC can be used for gas fee payments using the ERC-2771 standard on BOB. This enables users to transact without the necessity to own ether.
 
 ## Local development
 

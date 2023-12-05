@@ -14,10 +14,12 @@ const useContract = (contractType: ContractType) => {
 
   useEffect(() => {
     (async () => {
-      const relayedContract = await getRelayedContract(contractType);
-      setRelayedContract(relayedContract);
+      if (walletClient) {
+        const relayedContract = await getRelayedContract(contractType);
+        setRelayedContract(relayedContract);
+      }
     })();
-  }, [contractType]);
+  }, [contractType, walletClient]);
 
   const viemContract = useMemo(() => {
     const { address, abi } = contracts[contractType];

@@ -16,7 +16,7 @@ const getRelayedContract = async (contractType: ContractType) => {
   if (!window.ethereum) {
     throw new Error('Injected provider not found!');
   }
-
+  console.log(window.ethereum);
   const { address, abi } = contracts[contractType];
 
   const config = {

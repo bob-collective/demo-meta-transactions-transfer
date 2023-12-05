@@ -1,6 +1,7 @@
 import { RelayProvider } from '@opengsn/provider';
 import { providers, Contract } from 'ethers';
 import { contracts, ContractType } from '../constants';
+import { ExternalProvider } from '@ethersproject/providers';
 
 const erc20PaymasterAddress = contracts[ContractType.ERC20_PAYMASTER].address;
 
@@ -27,7 +28,7 @@ const getRelayedContract = async (contractType: ContractType) => {
   };
 
   const gsnProvider = await RelayProvider.newProvider({
-    provider: window.ethereum,
+    provider: window.ethereum as unknown as ExternalProvider,
     config,
     overrideDependencies: { asyncPaymasterData: getErc20PaymasterData }
   }).init();

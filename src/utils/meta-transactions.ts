@@ -20,7 +20,7 @@ const getRelayedContract = async (contractType: ContractType) => {
   const { address, abi } = contracts[contractType];
 
   const config = {
-    preferredRelays: ['https://gsn-relay-fluffy-bob.gobob.xyz'],
+    preferredRelays: ['https://gsn-relay-sepolia.gobob.xyz/'],
     performDryRunViewRelayCall: false,
     gasPriceSlackPercent: 1000,
     maxPaymasterDataLength: 100,

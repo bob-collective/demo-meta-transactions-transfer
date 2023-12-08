@@ -7,7 +7,7 @@ const erc20PaymasterAddress = contracts[ContractType.ERC20_PAYMASTER].address;
 
 async function getErc20PaymasterData() {
   return (
-    '0x000000000000000000000000833d9398A3DBa68994AdE7Db42Ff597831933aeD' +
+    '0x0000000000000000000000002868d708e442A6a940670d26100036d426F1e16b' +
     '0000000000000000000000000000000000000000000000fffffffff3a7640000'
   );
 }
@@ -20,7 +20,7 @@ const getRelayedContract = async (contractType: ContractType) => {
   const { address, abi } = contracts[contractType];
 
   const config = {
-    preferredRelays: ['https://gsn-relay-fluffy-bob.gobob.xyz'],
+    preferredRelays: ['https://gsn-relay-sepolia.gobob.xyz/'],
     performDryRunViewRelayCall: false,
     gasPriceSlackPercent: 1000,
     maxPaymasterDataLength: 100,

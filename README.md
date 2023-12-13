@@ -11,6 +11,8 @@ In this example, we will show how WBTC can be used for gas fee payments using th
 
 ### Connecting Metamask
 
+You can either connect directly from the UI, or from Conduit:
+
 1. Go to [Conduit](https://app.conduit.xyz/published/view/puff-bob-jznbxtoq7h)
 2. Click the 'Add to wallet button.'
 
